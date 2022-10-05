@@ -142,7 +142,7 @@ class PortalUtils extends EventTarget {
    * @param itemId
    * @returns {Promise<unknown>}
    */
-  getItem({itemId}) {
+  getWebMap({itemId}) {
     return new Promise((resolve, reject) => {
       this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }`).then((itemResponse) => {
         this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {

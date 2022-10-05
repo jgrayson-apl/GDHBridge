@@ -183,7 +183,7 @@ class GeodesignHubBridge extends EventTarget {
     this.#map?.remove();
     this.#map = L.map("map");
 
-    /*this.#portalUtils.getItem({itemId}).then(({item, data}) => {
+    /*this.#portalUtils.getWebMap({itemId}).then(({item, data}) => {
      console.info(item, data);
 
      data.basemap?.baseMapLayers?.forEach(layer => {
