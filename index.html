@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no"/>
+    
+    <title>Esri & Geodesign Hub Bridge</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" crossorigin=""></script>
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="https://unpkg.com/esri-leaflet@^3.0.8/dist/esri-leaflet.js"></script>
+    <!-- Load Esri Leaflet Vector from CDN -->
+    <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
+
+    <!-- Load Leaflet Label from GitHub -->
+    <script src="https://leaflet.github.io/Leaflet.label/leaflet.label.js"></script>
+    <!-- Include Leaflet.heat from CDN -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <!-- Load Heatmap Feature Layer from CDN -->
+    <script src="https://cdn.jsdelivr.net/leaflet.esri.heatmap-feature-layer/2.0.0-beta.1/esri-leaflet-heatmap-feature-layer.js"></script>
+    <!-- Load Esri Leaflet Renderers from CDN -->
+    <script src="https://cdn.jsdelivr.net/leaflet.esri.renderers/2.0.2/esri-leaflet-renderers.js"></script>
+    <!-- Load Vector Icon from GitHub -->
+    <script src="https://muxlab.github.io/Leaflet.VectorIcon/L.VectorIcon.js"></script>
+    <!-- Load Leaflet Omnivore -->
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js"></script>
+    <!-- Load L.esri.WebMap -->
+    <script src="https://cdn.jsdelivr.net/leaflet.esri.webmap/0.4.0/esri-leaflet-webmap.js"></script>
+    
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 14px;
+        color: #323232;
+        display: flex;
+        flex-direction: row;
+      }
+      
+      #main-container {
+        padding: 20px;
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+      }
+      
+      #map {
+        flex: 1 1 auto;
+        border: solid 1px #424242;
+      }
+      
+      .container {
+        margin: 5px;
+        padding: 20px;
+        height: auto;
+        background-color: #fafafa;
+        border: solid 1px #424242;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      #online-content {
+        flex: 0 0 450px;
+        max-width: 450px;
+      }
+      
+      #username-input {
+        margin-top: 5px;
+        padding: 5px;
+        width: calc(100% - 15px);
+      }
+      
+      #group-id-input {
+        margin-top: 5px;
+        padding: 5px;
+        width: calc(100% - 15px);
+      }
+      
+      #online-content-btn {
+        margin: 5px auto;
+        padding: 5px;
+        width: 100%;
+      }
+      
+      #online-content-items {
+        flex: 1 1 auto;
+        margin: 5px;
+        height: auto;
+      }
+      
+      #online-item-details {
+        overflow: auto;
+      }
+      
+      #item-title {
+        font-weight: 600;
+      }
+      
+      #item-details {
+        overflow-x: scroll;
+      }
+      
+      .online-item {
+        cursor: pointer;
+        margin-bottom: 2px;
+        padding: 5px 10px;
+        background-color: #ffffff;
+        border: solid 1px #cccccc;
+      }
+      
+      .online-item:hover {
+        background-color: #fefefe;
+        border: solid 1px #424242;
+      }
+    
+    </style>
+    <script type="module" src="./GeodesignHubBridge.js"></script>
+  </head>
+  <body>
+    <div id="main-container">
+      <div id="online-content">
+        <div id="user-container" class="container">
+          <div>User</div>
+          <input id="username-input" type="text" readonly>
+        </div>
+        <div id="online-content-details" class="container">
+          <div>Group ID</div>
+          <input id="group-id-input" type="text" value="24c1915cc377457ba6e090c7c8685b3c">
+          <button id="online-content-btn">get group content</button>
+          <div id="online-content-items"></div>
+        </div>
+        <div id="online-item-details" class="container">
+          <div id="item-title"></div>
+          <pre id="item-details"></pre>
+        </div>
+      </div>
+      <div id="map"></div>
+    </div>
+  </body>
+</html>
