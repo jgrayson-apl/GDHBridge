@@ -95,7 +95,7 @@ class PortalUtils extends EventTarget {
     return new Promise((resolve, reject) => {
       L.esri.get(url, {token: this.#token}, (error, response) => {
         (error != null) ? reject(error) : resolve(response);
-      })
+      });
     });
   }
 
@@ -128,11 +128,26 @@ class PortalUtils extends EventTarget {
    *
    * @param groupId
    */
-  getGroupContent({groupId}){
+  getGroupContent({groupId}) {
     return new Promise((resolve, reject) => {
       // GROUP DETAILS //
-      this._getDetails(`${ this.sharingURL }/rest/content/groups/${groupId}`).then((response) => {
+      this._getDetails(`${ this.sharingURL }/rest/content/groups/${ groupId }`).then((response) => {
         resolve(response);
+      }).catch(reject);
+    });
+  }
+
+  /**
+   *
+   * @param itemId
+   * @returns {Promise<unknown>}
+   */
+  getItem({itemId}) {
+    return new Promise((resolve, reject) => {
+      this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }`).then((itemResponse) => {
+        this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
+          resolve({item: itemResponse, data: dataResponse});
+        }).catch(reject);
       }).catch(reject);
     });
   }

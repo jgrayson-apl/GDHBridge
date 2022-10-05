@@ -48,6 +48,13 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * @type {PortalUtils}
+   * @private
+   */
+  #portalUtils;
+
+  /**
+   *
    * @type {string}
    * @private
    */
@@ -68,8 +75,8 @@ class GeodesignHubBridge extends EventTarget {
     const usernameInput = document.getElementById('username-input');
 
     // PORTAL UTILS //
-    const portalUtils = new PortalUtils({});
-    portalUtils.authenticate({clientId: this.#clientId}).then(({user, token}) => {
+    this.#portalUtils = new PortalUtils({});
+    this.#portalUtils.authenticate({clientId: this.#clientId}).then(({user, token}) => {
       // SESSION TOKEN //
       this.#token = token;
       // SIGNED IN USER //
@@ -84,7 +91,7 @@ class GeodesignHubBridge extends EventTarget {
     onlineContentBtn.addEventListener('click', () => {
       const groupId = groupIdInput.value;
 
-      portalUtils.getGroupContent({groupId}).then((groupContent) => {
+      this.#portalUtils.getGroupContent({groupId}).then((groupContent) => {
 
         const itemNodes = groupContent.items.map(onlineItem => {
           const itemNode = document.createElement('div');
@@ -113,15 +120,55 @@ class GeodesignHubBridge extends EventTarget {
   /**
    *
    * @param onlineItem
+   * @param append
    */
-  displayItemDetails(onlineItem) {
+  displayItemDetails(onlineItem, append = false) {
 
     const itemTitle = document.getElementById('item-title');
     const itemDetails = document.getElementById('item-details');
 
     itemTitle.innerHTML = onlineItem.title;
-    itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
 
+    if (append) {
+      itemDetails.innerHTML += JSON.stringify(onlineItem, null, 2);
+    } else {
+      itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
+    }
+
+  }
+
+  /**
+   *
+   * @param layer
+   * @returns {*}
+   * @private
+   */
+  _esriLayerToLeafletLayer(layer) {
+    //console.info(layer);
+
+    let leafletLayer;
+
+    switch (layer.layerType) {
+      case 'ArcGISTiledMapServiceLayer':
+        leafletLayer = L.esri.tiledMapLayer({url: layer.url, token: this.#token});
+        break;
+      case 'ArcGISMapServiceLayer':
+        leafletLayer = L.esri.dynamicMapLayer({url: layer.url, token: this.#token});
+        break;
+      case 'VectorTileLayer':
+        leafletLayer = L.esri.Vector.vectorTileLayer(layer.url, {token: this.#token});
+        break;
+      case 'ArcGISImageServiceLayer':
+        leafletLayer = L.esri.imageMapLayer({url: layer.url, token: this.#token});
+        break;
+      case 'ArcGISFeatureLayer':
+        leafletLayer = L.esri.featureLayer({url: layer.url, token: this.#token});
+        break;
+      default:
+        console.warn("Unsupported Layer Type: ", layer);
+    }
+
+    return leafletLayer;
   }
 
   /**
@@ -136,10 +183,35 @@ class GeodesignHubBridge extends EventTarget {
     this.#map?.remove();
     this.#map = L.map("map");
 
+    /*this.#portalUtils.getItem({itemId}).then(({item, data}) => {
+     console.info(item, data);
+
+     data.basemap?.baseMapLayers?.forEach(layer => {
+     const leafletLayer = this._esriLayerToLeafletLayer(layer);
+     console.info(layer, leafletLayer);
+
+     leafletLayer?.addTo(this.#map);
+     });
+
+     data.operationalLayers?.forEach(layer => {
+     const leafletLayer = this._esriLayerToLeafletLayer(layer);
+     console.info(layer, leafletLayer);
+
+     leafletLayer?.addTo(this.#map);
+     });
+
+     });*/
+
     const webmap = L.esri.webMap(itemId, {map: this.#map, token: token});
     webmap?.on("load", () => {
+      console.info(webmap);
 
       const overlayMaps = webmap.layers.reduce((infos, layerInfo) => {
+        console.info(layerInfo);
+
+        layerInfo.token = this.#token;
+        layerInfo.layer.token = this.#token;
+
         infos[layerInfo.title] = layerInfo.layer;
         return infos;
       }, {});
