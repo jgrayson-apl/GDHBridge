@@ -201,13 +201,15 @@ class GeodesignHubBridge extends EventTarget {
       this.displayItemDetails(data, true);
 
       data.basemap?.baseMapLayers?.forEach(layer => {
-        const leafletLayer = this._esriLayerToLeafletLayer(layer);
-        leafletLayer && this.#map.addLayer(leafletLayer);
+        this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
+          leafletLayer && leafletLayer.addTo(this.#map);
+        });
       });
 
       data.operationalLayers?.forEach(layer => {
-        const leafletLayer = this._esriLayerToLeafletLayer(layer);
-        leafletLayer && this.#map.addLayer(leafletLayer);
+        this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
+          leafletLayer && leafletLayer.addTo(this.#map);
+        });
       });
 
     });
