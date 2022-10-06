@@ -107,8 +107,11 @@ class GeodesignHubBridge extends EventTarget {
 
             // LOAD WEB MAP //
             if (onlineItem.type === 'Web Map') {
-              this.loadWebMap({itemId: onlineItem.id, token: this.#token});
+              this.displayWebMap({itemId: onlineItem.id, token: this.#token});
+            } else {
+              this.displayLayer({itemId: onlineItem.id, token: this.#token});
             }
+
           });
 
           return itemNode;
@@ -164,19 +167,19 @@ class GeodesignHubBridge extends EventTarget {
         case 'ArcGISImageServiceLayer':
           leafletLayer = new L.esri.imageMapLayer({url: layer.url, token: this.#token});
           break;
-        case  "ArcGISTiledImageServiceLayer":
-          console.warn("Unsupported Layer Type: ", layer);
-          break;
         case 'ArcGISFeatureLayer':
           leafletLayer = new L.esri.featureLayer({url: layer.url, token: this.#token});
+          break;
+        case 'ArcGISTiledImageServiceLayer':
+          reject(new Error(`Unsupported Layer Type: ${ layer }`));
           break;
         default:
           if (layer.itemId) {
             this.#portalUtils.getItem({itemId: layer.itemId}).then(({item}) => {
-              this._esriLayerToLeafletLayer(item).then(resolve);
-            });
+              this._esriLayerToLeafletLayer(item).then(resolve).catch(reject);
+            }).catch(reject);
           } else {
-            console.warn("Unsupported Layer Type: ", layer);
+            reject(new Error(`Unsupported Layer Type: ${ layer }`));
           }
       }
 
@@ -186,35 +189,64 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
-   * https://github.com/ynunokawa/L.esri.WebMap/issues/76
+   * @param {string} itemId
+   * @param {string} [token]
+   */
+  displayLayer({itemId, token}) {
+
+    this.#map?.remove();
+    this.#map = L.map("map");
+
+    this.#portalUtils.getItem({itemId}).then(({item}) => {
+      console.info(item);
+
+      this._esriLayerToLeafletLayer(item).then((leafletLayer) => {
+        leafletLayer && leafletLayer.addTo(this.#map);
+      }).catch(this._displayError);
+
+    });
+
+  }
+
+  /**
    *
    * @param {string} itemId
    * @param {string} [token]
    */
-  loadWebMap = ({itemId, token}) => {
+  displayWebMap({itemId, token}) {
 
     this.#map?.remove();
     this.#map = L.map("map");
 
     this.#portalUtils.getItem({itemId, fetchData: true}).then(({item, data}) => {
       console.info(item, data);
+
       this.displayItemDetails(data, true);
 
       data.basemap?.baseMapLayers?.forEach(layer => {
         this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
           leafletLayer && leafletLayer.addTo(this.#map);
-        });
+        }).catch(this._displayError);
       });
 
       data.operationalLayers?.forEach(layer => {
         this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
           leafletLayer && leafletLayer.addTo(this.#map);
-        });
+        }).catch(this._displayError);
       });
 
     });
 
-  };
+  }
+
+  /**
+   *
+   * @param error
+   * @private
+   */
+  _displayError(error) {
+    console.error(error);
+  }
 
 }
 
