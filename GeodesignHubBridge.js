@@ -124,6 +124,9 @@ class GeodesignHubBridge extends EventTarget {
               this.displayLayer({itemId: onlineItem.id, token: this.#token});
             }
           });
+          itemNode.addEventListener('dblclick', () => {
+            window.open(`https://www.arcgis.com/home/item.html?id=${ onlineItem.id }`);
+          });
 
           return itemNode;
         });
