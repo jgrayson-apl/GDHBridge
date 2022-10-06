@@ -79,7 +79,6 @@ class PortalUtils extends EventTarget {
     super();
 
     this.callbackPage = window.location.href.replace(/index/, 'oauth-callback');
-
     this.portalURL = portalURL || PortalUtils.DEFAULT_PORTAL_URL;
     this.sharingURL = `${ this.portalURL }/sharing`;
 
@@ -140,14 +139,19 @@ class PortalUtils extends EventTarget {
   /**
    *
    * @param itemId
-   * @returns {Promise<unknown>}
+   * @param fetchData
+   * @returns {Promise<{item:{}, data:{}} | {item:{}}>}
    */
-  getWebMap({itemId}) {
+  getItem({itemId, fetchData = false}) {
     return new Promise((resolve, reject) => {
       this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }`).then((itemResponse) => {
-        this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
-          resolve({item: itemResponse, data: dataResponse});
-        }).catch(reject);
+        if (fetchData) {
+          this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
+            resolve({item: itemResponse, data: dataResponse});
+          }).catch(reject);
+        } else {
+          resolve({item: itemResponse});
+        }
       }).catch(reject);
     });
   }

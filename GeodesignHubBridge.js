@@ -24,8 +24,11 @@
  *
  *
  * GeoPlanner Project - an ArcGIS.com Group
- *
  * https://apl.maps.arcgis.com/home/group.html?id=24c1915cc377457ba6e090c7c8685b3c
+ *
+ * https://leafletjs.com/
+ * https://developers.arcgis.com/esri-leaflet/
+ *
  *
  * https://developers.arcgis.com/arcgis-rest-js/authentication/tutorials/authenticate-with-an-arcgis-identity-rest-js-browser/
  *
@@ -127,9 +130,10 @@ class GeodesignHubBridge extends EventTarget {
     const itemTitle = document.getElementById('item-title');
     const itemDetails = document.getElementById('item-details');
 
-    itemTitle.innerHTML = onlineItem.title;
+    onlineItem.title && (itemTitle.innerHTML = onlineItem.title);
 
     if (append) {
+      itemDetails.innerHTML += "<br><br>";
       itemDetails.innerHTML += JSON.stringify(onlineItem, null, 2);
     } else {
       itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
@@ -144,31 +148,40 @@ class GeodesignHubBridge extends EventTarget {
    * @private
    */
   _esriLayerToLeafletLayer(layer) {
-    //console.info(layer);
+    return new Promise((resolve, reject) => {
 
-    let leafletLayer;
+      let leafletLayer;
+      switch (layer.layerType) {
+        case 'ArcGISTiledMapServiceLayer':
+          leafletLayer = new L.esri.tiledMapLayer({url: layer.url, token: this.#token});
+          break;
+        case 'ArcGISMapServiceLayer':
+          leafletLayer = new L.esri.dynamicMapLayer({url: layer.url, token: this.#token});
+          break;
+        case 'VectorTileLayer':
+          leafletLayer = new L.esri.Vector.vectorTileLayer(layer.url || layer.styleUrl, {token: this.#token});
+          break;
+        case 'ArcGISImageServiceLayer':
+          leafletLayer = new L.esri.imageMapLayer({url: layer.url, token: this.#token});
+          break;
+        case  "ArcGISTiledImageServiceLayer":
+          console.warn("Unsupported Layer Type: ", layer);
+          break;
+        case 'ArcGISFeatureLayer':
+          leafletLayer = new L.esri.featureLayer({url: layer.url, token: this.#token});
+          break;
+        default:
+          if (layer.itemId) {
+            this.#portalUtils.getItem({itemId: layer.itemId}).then(({item}) => {
+              this._esriLayerToLeafletLayer(item).then(resolve);
+            });
+          } else {
+            console.warn("Unsupported Layer Type: ", layer);
+          }
+      }
 
-    switch (layer.layerType) {
-      case 'ArcGISTiledMapServiceLayer':
-        leafletLayer = L.esri.tiledMapLayer({url: layer.url, token: this.#token});
-        break;
-      case 'ArcGISMapServiceLayer':
-        leafletLayer = L.esri.dynamicMapLayer({url: layer.url, token: this.#token});
-        break;
-      case 'VectorTileLayer':
-        leafletLayer = L.esri.Vector.vectorTileLayer(layer.url, {token: this.#token});
-        break;
-      case 'ArcGISImageServiceLayer':
-        leafletLayer = L.esri.imageMapLayer({url: layer.url, token: this.#token});
-        break;
-      case 'ArcGISFeatureLayer':
-        leafletLayer = L.esri.featureLayer({url: layer.url, token: this.#token});
-        break;
-      default:
-        console.warn("Unsupported Layer Type: ", layer);
-    }
-
-    return leafletLayer;
+      resolve(leafletLayer);
+    });
   }
 
   /**
@@ -183,40 +196,19 @@ class GeodesignHubBridge extends EventTarget {
     this.#map?.remove();
     this.#map = L.map("map");
 
-    /*this.#portalUtils.getWebMap({itemId}).then(({item, data}) => {
-     console.info(item, data);
+    this.#portalUtils.getItem({itemId, fetchData: true}).then(({item, data}) => {
+      console.info(item, data);
+      this.displayItemDetails(data, true);
 
-     data.basemap?.baseMapLayers?.forEach(layer => {
-     const leafletLayer = this._esriLayerToLeafletLayer(layer);
-     console.info(layer, leafletLayer);
+      data.basemap?.baseMapLayers?.forEach(layer => {
+        const leafletLayer = this._esriLayerToLeafletLayer(layer);
+        leafletLayer && this.#map.addLayer(leafletLayer);
+      });
 
-     leafletLayer?.addTo(this.#map);
-     });
-
-     data.operationalLayers?.forEach(layer => {
-     const leafletLayer = this._esriLayerToLeafletLayer(layer);
-     console.info(layer, leafletLayer);
-
-     leafletLayer?.addTo(this.#map);
-     });
-
-     });*/
-
-    const webmap = L.esri.webMap(itemId, {map: this.#map, token: token});
-    webmap?.on("load", () => {
-      console.info(webmap);
-
-      const overlayMaps = webmap.layers.reduce((infos, layerInfo) => {
-        console.info(layerInfo);
-
-        layerInfo.token = this.#token;
-        layerInfo.layer.token = this.#token;
-
-        infos[layerInfo.title] = layerInfo.layer;
-        return infos;
-      }, {});
-
-      L.control.layers({}, overlayMaps, {position: "bottomleft"}).addTo(webmap._map);
+      data.operationalLayers?.forEach(layer => {
+        const leafletLayer = this._esriLayerToLeafletLayer(layer);
+        leafletLayer && this.#map.addLayer(leafletLayer);
+      });
 
     });
 

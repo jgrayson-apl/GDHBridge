@@ -13,22 +13,6 @@
     <script src="https://unpkg.com/esri-leaflet@^3.0.8/dist/esri-leaflet.js"></script>
     <!-- Load Esri Leaflet Vector from CDN -->
     <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
-
-    <!-- Load Leaflet Label from GitHub -->
-    <script src="https://leaflet.github.io/Leaflet.label/leaflet.label.js"></script>
-    <!-- Include Leaflet.heat from CDN -->
-    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <!-- Load Heatmap Feature Layer from CDN -->
-    <script src="https://cdn.jsdelivr.net/leaflet.esri.heatmap-feature-layer/2.0.0-beta.1/esri-leaflet-heatmap-feature-layer.js"></script>
-    <!-- Load Esri Leaflet Renderers from CDN -->
-    <script src="https://cdn.jsdelivr.net/leaflet.esri.renderers/2.0.2/esri-leaflet-renderers.js"></script>
-    <!-- Load Vector Icon from GitHub -->
-    <script src="https://muxlab.github.io/Leaflet.VectorIcon/L.VectorIcon.js"></script>
-    <!-- Load Leaflet Omnivore -->
-    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js"></script>
-    <!-- Load L.esri.WebMap -->
-    <script src="https://cdn.jsdelivr.net/leaflet.esri.webmap/0.4.0/esri-leaflet-webmap.js"></script>
-    
     
     <style>
       html, body {
@@ -84,9 +68,17 @@
       }
       
       #online-content-btn {
+        width: 100%;
         margin: 5px auto;
         padding: 5px;
-        width: 100%;
+        border-radius: 1rem;
+        font-size: 11pt;
+        color: #fefefe;
+        background-color: #424242;
+      }
+
+      #online-content-btn:active {
+        background-color: #828282;
       }
       
       #online-content-items {
@@ -135,7 +127,7 @@
         </div>
         <div id="online-content-details" class="container">
           <div>Group ID</div>
-          <input id="group-id-input" type="text" value="24c1915cc377457ba6e090c7c8685b3c">
+          <input id="group-id-input" type="text" valueX="24c1915cc377457ba6e090c7c8685b3c" value="eed445d46c6742f482723a94119391c4">
           <button id="online-content-btn">discover group content</button>
           <div id="online-content-items"></div>
         </div>
