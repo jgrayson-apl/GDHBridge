@@ -44,7 +44,7 @@ class PortalUtils extends EventTarget {
    *
    * @type {string}
    */
-  static DEFAULT_PORTAL_URL = "https://www.arcgis.com/";
+  static DEFAULT_PORTAL_URL = "https://www.arcgis.com";
 
   /**
    *
@@ -104,7 +104,7 @@ class PortalUtils extends EventTarget {
 
   /**
    *
-   * @param clientId
+   * @param {string} clientId
    */
   authenticate({clientId}) {
     return new Promise((resolve, reject) => {
@@ -113,7 +113,7 @@ class PortalUtils extends EventTarget {
         // SET SESSION TOKEN //
         this.#token = token;
 
-        // GET DETAILS ABOUT CURRENTLY SIGNED IN USER //
+        // GET DETAILS ABOUT PORTAL ADN CURRENTLY SIGNED IN USER //
         this._getDetails(`${ this.sharingURL }/rest/portals/self`).then((response) => {
           resolve({user: response.user, token: this.#token});
         }).catch(reject);
@@ -130,7 +130,7 @@ class PortalUtils extends EventTarget {
    *
    * https://developers.arcgis.com/rest/users-groups-and-items/group-content.htm
    *
-   * @param groupId
+   * @param {string} groupId
    */
   getGroupContent({groupId}) {
     return new Promise((resolve, reject) => {
@@ -143,8 +143,8 @@ class PortalUtils extends EventTarget {
 
   /**
    *
-   * @param itemId
-   * @param fetchData
+   * @param {string} itemId
+   * @param {boolean} fetchData
    * @returns {Promise<{item:{}, data:{}} | {item:{}}>}
    */
   getItem({itemId, fetchData = false}) {
@@ -165,7 +165,7 @@ class PortalUtils extends EventTarget {
 
   /**
    *
-   * @param itemId
+   * @param {string} itemId
    * @returns {Promise<{}>}
    */
   getItemData({itemId}) {
