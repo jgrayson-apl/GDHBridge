@@ -264,7 +264,14 @@ class GeodesignHubBridge extends EventTarget {
       // GET ESRI-LEAFLET LAYER //
       this._esriLayerItemToLeafletLayer(item).then((leafletLayer) => {
         // ADD ESRI-LEAFLET LAYER TO LEAFLET MAP //
-        leafletLayer && leafletLayer.addTo(this.#map);
+        if (leafletLayer) {
+          leafletLayer.addTo(this.#map);
+          /*leafletLayer.query().bounds((error, latlngbounds) => {
+            if (error) { console.log('Error running "Query" operation: ' + error); }
+            this.#map.fitBounds(latlngbounds);
+          });*/
+        }
+
       }).catch(this._displayError);
     }).catch(this._displayError);
 
