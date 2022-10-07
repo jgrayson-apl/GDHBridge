@@ -74,17 +74,48 @@ class GeodesignHubBridge extends EventTarget {
   constructor() {
     super();
 
-    // USER NAME //
-    const usernameInput = document.getElementById('username-input');
-
     // PORTAL UTILS //
     this.#portalUtils = new PortalUtils({});
-    this.#portalUtils.authenticate({clientId: this.#clientId}).then(({user, token}) => {
-      // SESSION TOKEN //
-      this.#token = token;
-      // SIGNED IN USER //
-      usernameInput.value = user.username;
+
+    // SIGN IN //
+    this._initializeSignIn();
+
+  }
+
+  /**
+   *
+   * @private
+   */
+  _initializeSignIn() {
+
+    // SIGN IN BUTTON //
+    const signInBtn = document.getElementById('sign-in-btn');
+    signInBtn.addEventListener('click', () => {
+
+      // USER NAME INPUT //
+      const usernameInput = document.getElementById('username-input');
+
+      // AUTHENTICATE //
+      this.#portalUtils.authenticate({clientId: this.#clientId}).then(({user, token}) => {
+        // SESSION TOKEN //
+        this.#token = token;
+        // SIGNED IN USER //
+        usernameInput.value = user.username;
+
+        // GROUP CONTENT //
+        this._initializeGroupContent();
+
+      });
+
     });
+
+  }
+
+  /**
+   *
+   * @private
+   */
+  _initializeGroupContent() {
 
     // LAYER ITEM FILTER //
     const layerTypes = ['Feature Service', 'Image Service', 'Vector Tile Service']; //'Map Service',
@@ -97,7 +128,7 @@ class GeodesignHubBridge extends EventTarget {
 
     // GET ONLINE CONTENT //
     const onlineContentBtn = document.getElementById('online-content-btn');
-    onlineContentBtn.addEventListener('click', () => {
+    onlineContentBtn?.addEventListener('click', () => {
       const groupId = groupIdSelect.value;
 
       this.#portalUtils.getGroupContent({groupId}).then((groupContent) => {
@@ -134,6 +165,12 @@ class GeodesignHubBridge extends EventTarget {
 
       });
     });
+
+    const onlineContentDetail = document.getElementById('online-content-details');
+    onlineContentDetail?.toggleAttribute('hidden', false);
+
+    const onlineItemDetails = document.getElementById('online-item-details');
+    onlineItemDetails?.toggleAttribute('hidden', false);
 
   }
 

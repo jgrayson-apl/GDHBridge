@@ -53,6 +53,10 @@
         flex-direction: column;
       }
       
+      .container[hidden] {
+        display: none;
+      }
+      
       #online-content {
         flex: 0 0 450px;
         max-width: 450px;
@@ -70,7 +74,7 @@
         width: calc(100% - 15px);
       }
       
-      #online-content-btn {
+      .online-btn {
         width: 100%;
         margin: 5px auto;
         padding: 5px;
@@ -124,26 +128,28 @@
   <body>
     <div id="main-container">
       <div id="online-content">
+        
         <div id="user-container" class="container">
           <div>User</div>
+          <button id="sign-in-btn" class="online-btn">sign in</button>
           <input id="username-input" type="text" readonly>
         </div>
-        <div id="online-content-details" class="container">
-          <label>
-            <span>Test Online Groups</span>
-            <select id="group-id-select">
-              <option value="24c1915cc377457ba6e090c7c8685b3c">Test Group A</option>
-              <option value="eed445d46c6742f482723a94119391c4">Test Group B</option>
-            </select>
-          </label>
+        
+        <div id="online-content-details" class="container" hidden>
+          <label> <span>Test Online Groups</span> <select id="group-id-select">
+            <option value="24c1915cc377457ba6e090c7c8685b3c">Test Group A</option>
+            <option value="eed445d46c6742f482723a94119391c4">Test Group B</option>
+          </select> </label>
           
-          <button id="online-content-btn">discover group content</button>
+          <button id="online-content-btn" class="online-btn">discover group content</button>
           <div id="online-content-items"></div>
         </div>
-        <div id="online-item-details" class="container">
+        
+        <div id="online-item-details" class="container" hidden>
           <div id="item-title"></div>
           <pre id="item-details"></pre>
         </div>
+        
       </div>
       <div id="map"></div>
     </div>
