@@ -88,8 +88,7 @@ class GeodesignHubBridge extends EventTarget {
 
     // LAYER ITEM FILTER //
     const layerTypes = ['Feature Service', 'Image Service', 'Vector Tile Service']; //'Map Service',
-    const invalidKeywords = ['Tiled Imagery'];
-    const _layerFilter = (item) => (layerTypes.includes(item.type)) && item.typeKeywords.every(keyword => !invalidKeywords.includes(keyword));
+    const _layerFilter = (item) => (layerTypes.includes(item.type));
 
     // ONLINE CONTENT CONTAINER //
     const onlineContentItems = document.getElementById('online-content-items');
@@ -135,6 +134,20 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * @private
+   */
+  _resetMap() {
+
+    this.#map?.remove();
+    this.#map = L.map("map").setView([34.0, -117.0], 9);
+
+    L.esri.tiledMapLayer({url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer", token: this.#token}).addTo(this.#map);
+    L.esri.Vector.vectorBasemapLayer("7dc6cea0b1764a1f9af2e679f642f0f5", {token: this.#token}).addTo(this.#map);
+
+  }
+
+  /**
+   *
    * @param onlineItem
    * @param append
    */
@@ -170,15 +183,19 @@ class GeodesignHubBridge extends EventTarget {
 
         case 'Feature Service':
           item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/${ item.subId || '0' }` : item.url;
-          leafletLayer = new L.esri.featureLayer({url: item.url, token: this.#token, ...data});
+          leafletLayer = L.esri.featureLayer({url: item.url, token: this.#token, ...data});
           break;
 
         case 'Vector Tile Service':
-          leafletLayer = new L.esri.Vector.vectorTileLayer(item.id || item.url || item.styleUrl, {token: this.#token, ...data});
+          leafletLayer = L.esri.Vector.vectorTileLayer(item.id || item.url || item.styleUrl, {token: this.#token, ...data});
           break;
 
         case 'Image Service':
-          leafletLayer = new L.esri.imageMapLayer({url: item.url, token: this.#token, ...data});
+          if (item.typeKeywords.includes('Tiled Imagery')) {
+            leafletLayer = L.tileLayer(`${ item.url }/tile/{z}/{y}/{x}`, {token: this.#token, ...data});
+          } else {
+            leafletLayer = L.esri.imageMapLayer({url: item.url, token: this.#token, ...data});
+          }
           break;
 
         /*case 'XXX':
@@ -208,9 +225,7 @@ class GeodesignHubBridge extends EventTarget {
    */
   displayLayer({item, token}) {
 
-    this.#map?.remove();
-    this.#map = L.map("map").setView([34.0, -117.0], 9);
-    L.esri.basemapLayer('Topographic').addTo(this.#map);
+    this._resetMap();
 
     this.#portalUtils.getItemData({itemId: item.id}).then(({data}) => {
       // DISPLAY LAYER OVERRIDES //

@@ -172,7 +172,9 @@ class PortalUtils extends EventTarget {
     return new Promise((resolve, reject) => {
       this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
         resolve({data: dataResponse});
-      }).catch(reject);
+      }).catch(error => {
+        resolve({data: null, error});
+      });
     });
   }
 
