@@ -11,6 +11,9 @@
     <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" crossorigin=""></script>
     <!-- Load Esri Leaflet from CDN -->
     <script src="https://unpkg.com/esri-leaflet@^3.0.8/dist/esri-leaflet.js"></script>
+    <!-- Load Esri Leaflet Renderers -->
+    <!-- This will hook into Esri Leaflet to get renderer info when adding a feature layer -->
+    <script src="https://unpkg.com/esri-leaflet-renderers@3.0.0" crossorigin=""></script>
     <!-- Load Esri Leaflet Vector from CDN -->
     <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
     
@@ -76,7 +79,7 @@
         color: #fefefe;
         background-color: #424242;
       }
-
+      
       #online-content-btn:active {
         background-color: #828282;
       }
@@ -126,8 +129,14 @@
           <input id="username-input" type="text" readonly>
         </div>
         <div id="online-content-details" class="container">
-          <div>Group ID</div>
-          <input id="group-id-input" type="text" valueX="24c1915cc377457ba6e090c7c8685b3c" value="eed445d46c6742f482723a94119391c4">
+          <label>
+            <span>Test Online Groups</span>
+            <select id="group-id-select">
+              <option value="24c1915cc377457ba6e090c7c8685b3c">Test Group A</option>
+              <option value="eed445d46c6742f482723a94119391c4">Test Group B</option>
+            </select>
+          </label>
+          
           <button id="online-content-btn">discover group content</button>
           <div id="online-content-items"></div>
         </div>

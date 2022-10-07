@@ -85,6 +85,10 @@ class PortalUtils extends EventTarget {
   }
 
   /**
+   * GENERIC REST CALL VIA THE ESRI-LEAFLET API
+   * NOTE: OTHER RELATED UTILITY REQUEST METHODS AVAILABLE
+   *
+   * https://developers.arcgis.com/esri-leaflet/api-reference/request/
    *
    * @param {string} url
    * @returns {Promise<{}>}
@@ -115,8 +119,9 @@ class PortalUtils extends EventTarget {
         }).catch(reject);
       };
 
-      const callbackURL = `https://www.arcgis.com/sharing/oauth2/authorize?client_id=${ clientId }&response_type=token&expiration=20160&redirect_uri=${ this.callbackPage }`;
-      window.open(callbackURL, "oauth", PortalUtils.OPEN_WINDOWS_PARAMS);
+      // AUTHORIZATION //
+      const authorizeURL = `${ this.sharingURL }/oauth2/authorize?client_id=${ clientId }&response_type=token&expiration=20160&redirect_uri=${ this.callbackPage }`;
+      window.open(authorizeURL, "oauth", PortalUtils.OPEN_WINDOWS_PARAMS);
 
     });
   }
@@ -152,6 +157,19 @@ class PortalUtils extends EventTarget {
         } else {
           resolve({item: itemResponse});
         }
+      }).catch(reject);
+    });
+  }
+
+  /**
+   *
+   * @param itemId
+   * @returns {Promise<{}>}
+   */
+  getItemData({itemId}) {
+    return new Promise((resolve, reject) => {
+      this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
+        resolve({data: dataResponse});
       }).catch(reject);
     });
   }

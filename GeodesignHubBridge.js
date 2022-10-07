@@ -87,26 +87,23 @@ class GeodesignHubBridge extends EventTarget {
     });
 
     // ITEM FILTER //
-    const mapTypes = ['Web Map'];
-    const layerTypes = ['Feature Service', 'Image Service'];
+    //const mapTypes = ['Web Map'];
+    const layerTypes = ['Feature Service', 'Image Service', 'Vector Tile Service']; //'Map Service',
     const invalidKeywords = ['Tiled Imagery'];
-    const _itemFilter = (item) => (mapTypes.includes(item.type) || layerTypes.includes(item.type)) && item.typeKeywords.every(keyword => !invalidKeywords.includes(keyword));
+    const _layerFilter = (item) => (layerTypes.includes(item.type)) && item.typeKeywords.every(keyword => !invalidKeywords.includes(keyword));
+    //const _itemFilter = (item) => (mapTypes.includes(item.type) || layerTypes.includes(item.type)) && item.typeKeywords.every(keyword => !invalidKeywords.includes(keyword));
 
     // ONLINE CONTENT //
     const onlineContentItems = document.getElementById('online-content-items');
-    const groupIdInput = document.getElementById('group-id-input');
+    const groupIdSelect = document.getElementById('group-id-select');
 
     const onlineContentBtn = document.getElementById('online-content-btn');
     onlineContentBtn.addEventListener('click', () => {
-      const groupId = groupIdInput.value;
+      const groupId = groupIdSelect.value;
 
       this.#portalUtils.getGroupContent({groupId}).then((groupContent) => {
 
-        const itemNodes = groupContent.items.filter(item => {
-          const isValid = _itemFilter(item);
-          !isValid && this._displayError(new Error(`Unsupported Layer Type: ${ JSON.stringify(item.title) }`), item);
-          return isValid;
-        }).map(onlineItem => {
+        const itemNodes = groupContent.items.filter(_layerFilter).map(onlineItem => {
 
           const itemNode = document.createElement('div');
           itemNode.classList.add('online-item');
@@ -118,12 +115,9 @@ class GeodesignHubBridge extends EventTarget {
             // DISPLAY ITEM DETAILS //
             this.displayItemDetails(onlineItem);
 
-            // LOAD WEB MAP //
-            if (onlineItem.type === 'Web Map') {
-              this.displayWebMap({itemId: onlineItem.id, token: this.#token});
-            } else {
-              this.displayLayer({itemId: onlineItem.id, token: this.#token});
-            }
+            // DISPLAY LAYER //
+            this.displayLayer({item: onlineItem, token: this.#token});
+
           });
           itemNode.addEventListener('dblclick', (evt) => {
             evt.stopPropagation();
@@ -162,80 +156,81 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
-   * @param layerInfo
+   * @param {{}} item
+   * @param {{}} [data]
    * @returns {*}
    * @private
    */
-  _esriLayerToLeafletLayer(layerInfo) {
+  _esriLayerItemToLeafletLayer(item, data = {}) {
     return new Promise((resolve, reject) => {
+      console.info(item.type, item);
 
-      if (layerInfo.itemId) {
-        this.#portalUtils.getItem({itemId: layerInfo.itemId}).then(({item}) => {
-          this._esriLayerToLeafletLayer(item).then(resolve).catch(reject);
-        }).catch(reject);
+      let leafletLayer;
+      switch (item.type) {
 
-      } else {
+        case 'ArcGISFeatureLayer':
+        case 'Feature Service':
+          item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/0` : item.url;
+          leafletLayer = new L.esri.featureLayer({url: item.url, token: this.#token, ...data});
+          break;
 
-        console.info(layerInfo.layerType, layerInfo.type, layerInfo);
+        case 'VectorTileLayer':
+        case 'Vector Tile Service':
+          leafletLayer = new L.esri.Vector.vectorTileLayer(item.id || item.url || item.styleUrl, {token: this.#token, ...data});
+          break;
 
-        let leafletLayer;
-        switch (layerInfo.layerType || layerInfo.type) {
+        case 'ArcGISImageServiceLayer':
+        case 'Image Service':
+          leafletLayer = new L.esri.imageMapLayer({url: item.url, token: this.#token, ...data});
+          break;
 
-          case 'ArcGISFeatureLayer':
-          case 'Feature Service':
-            layerInfo.url = layerInfo.url.endsWith('/FeatureServer') ? `${ layerInfo.url }/0` : layerInfo.url;
-            leafletLayer = new L.esri.featureLayer({url: layerInfo.url, token: this.#token});
-            break;
+        /*case 'ArcGISMapServiceLayer':
+         leafletLayer = new L.esri.dynamicMapLayer({url: layerInfo.url, token: this.#token});
+         break;*/
 
-          case 'ArcGISMapServiceLayer':
-            leafletLayer = new L.esri.dynamicMapLayer({url: layerInfo.url, token: this.#token});
-            break;
+        /*case 'ArcGISTiledMapServiceLayer':
+         leafletLayer = new L.esri.tiledMapLayer({url: layerInfo.url, token: this.#token});
+         break;*/
 
-          case 'ArcGISTiledMapServiceLayer':
-            leafletLayer = new L.esri.tiledMapLayer({url: layerInfo.url, token: this.#token});
-            break;
+        /*case 'ArcGISTiledImageServiceLayer':
+         reject(new Error(`Unsupported Layer Type: ${ JSON.stringify(layerInfo) }`));
+         break;*/
 
-          case 'VectorTileLayer':
-            leafletLayer = new L.esri.Vector.vectorTileLayer(layerInfo.url || layerInfo.styleUrl, {token: this.#token});
-            break;
-
-          case 'ArcGISImageServiceLayer':
-          case 'Image Service':
-            leafletLayer = new L.esri.imageMapLayer({url: layerInfo.url, token: this.#token});
-            break;
-
-          case 'ArcGISTiledImageServiceLayer':
-            reject(new Error(`Unsupported Layer Type: ${ JSON.stringify(layerInfo) }`));
-            break;
-
-          default:
-            reject(new Error(`Unsupported Layer Type: ${ JSON.stringify(layerInfo) }`));
-        }
-
-        resolve(leafletLayer);
+        default:
+          reject(new Error(`Unsupported Layer Type: ${ JSON.stringify(item) }`));
       }
+
+      resolve(leafletLayer);
     });
   }
 
   /**
    *
-   * @param {string} itemId
+   * @param {{}} item
    * @param {string} [token]
    */
-  displayLayer({itemId, token}) {
+  displayLayer({item, token}) {
 
     this.#map?.remove();
     this.#map = L.map("map").setView([34.0, -117.0], 9);
     L.esri.basemapLayer('Topographic').addTo(this.#map);
 
-    this.#portalUtils.getItem({itemId}).then(({item}) => {
-      console.info(item);
+    this.#portalUtils.getItemData({itemId: item.id}).then(({data}) => {
 
-      this._esriLayerToLeafletLayer(item).then((leafletLayer) => {
+      const layerDefinition = data.layers[item.subInfo].layerDefinition;
+      this.displayItemDetails(layerDefinition, true);
+
+      const layerOptions = {};
+      if(layerDefinition) {
+        layerDefinition.definitionExpression && (layerOptions.where = layerDefinition.definitionExpression);
+        layerDefinition.fields && (layerOptions.fields = ["OBJECTID"].concat(layerDefinition.fields.map(fld => fld.name)));
+      }
+
+      this._esriLayerItemToLeafletLayer(item, layerOptions).then((leafletLayer) => {
         leafletLayer && leafletLayer.addTo(this.#map);
       }).catch(this._displayError);
 
-    });
+    }).catch(this._displayError);
 
   }
 
@@ -244,11 +239,11 @@ class GeodesignHubBridge extends EventTarget {
    * @param {string} itemId
    * @param {string} [token]
    */
-  displayWebMap({itemId, token}) {
+  /*displayWebMap({itemId, token}) {
 
     this.#map?.remove();
     this.#map = L.map("map").setView([34.0, -117.0], 9);
-    L.esri.basemapLayer('Topographic').addTo(this.#map);
+    //L.esri.basemapLayer('Topographic').addTo(this.#map);
 
     this.#portalUtils.getItem({itemId, fetchData: true}).then(({item, data}) => {
       console.info(item, data);
@@ -269,7 +264,7 @@ class GeodesignHubBridge extends EventTarget {
 
     });
 
-  }
+  }*/
 
   /**
    *
