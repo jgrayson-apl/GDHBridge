@@ -216,20 +216,14 @@ class GeodesignHubBridge extends EventTarget {
     L.esri.basemapLayer('Topographic').addTo(this.#map);
 
     this.#portalUtils.getItemData({itemId: item.id}).then(({data}) => {
+      // DISPLAY LAYER DATA //
+      data && this.displayItemDetails(data, true);
 
-      const layerDefinition = data.layers[item.subInfo].layerDefinition;
-      this.displayItemDetails(layerDefinition, true);
-
-      const layerOptions = {};
-      if(layerDefinition) {
-        layerDefinition.definitionExpression && (layerOptions.where = layerDefinition.definitionExpression);
-        layerDefinition.fields && (layerOptions.fields = ["OBJECTID"].concat(layerDefinition.fields.map(fld => fld.name)));
-      }
-
-      this._esriLayerItemToLeafletLayer(item, layerOptions).then((leafletLayer) => {
+      // GET ESRI-LEAFLET LAYER //
+      this._esriLayerItemToLeafletLayer(item).then((leafletLayer) => {
+        // ADD ESRI-LEAFLET LAYER TO LEAFLET MAP //
         leafletLayer && leafletLayer.addTo(this.#map);
       }).catch(this._displayError);
-
     }).catch(this._displayError);
 
   }
@@ -239,32 +233,33 @@ class GeodesignHubBridge extends EventTarget {
    * @param {string} itemId
    * @param {string} [token]
    */
+
   /*displayWebMap({itemId, token}) {
 
-    this.#map?.remove();
-    this.#map = L.map("map").setView([34.0, -117.0], 9);
-    //L.esri.basemapLayer('Topographic').addTo(this.#map);
+   this.#map?.remove();
+   this.#map = L.map("map").setView([34.0, -117.0], 9);
+   //L.esri.basemapLayer('Topographic').addTo(this.#map);
 
-    this.#portalUtils.getItem({itemId, fetchData: true}).then(({item, data}) => {
-      console.info(item, data);
+   this.#portalUtils.getItem({itemId, fetchData: true}).then(({item, data}) => {
+   console.info(item, data);
 
-      this.displayItemDetails(data, true);
+   this.displayItemDetails(data, true);
 
-      data.basemap?.baseMapLayers?.forEach(layer => {
-        this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
-          leafletLayer && leafletLayer.addTo(this.#map);
-        }).catch(this._displayError);
-      });
+   data.basemap?.baseMapLayers?.forEach(layer => {
+   this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
+   leafletLayer && leafletLayer.addTo(this.#map);
+   }).catch(this._displayError);
+   });
 
-      data.operationalLayers?.forEach(layer => {
-        this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
-          leafletLayer && leafletLayer.addTo(this.#map);
-        }).catch(this._displayError);
-      });
+   data.operationalLayers?.forEach(layer => {
+   this._esriLayerToLeafletLayer(layer).then((leafletLayer) => {
+   leafletLayer && leafletLayer.addTo(this.#map);
+   }).catch(this._displayError);
+   });
 
-    });
+   });
 
-  }*/
+   }*/
 
   /**
    *

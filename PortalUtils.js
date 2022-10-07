@@ -153,7 +153,9 @@ class PortalUtils extends EventTarget {
         if (fetchData) {
           this._getDetails(`${ this.sharingURL }/rest/content/items/${ itemId }/data`).then((dataResponse) => {
             resolve({item: itemResponse, data: dataResponse});
-          }).catch(reject);
+          }).catch(error => {
+            resolve({item: itemResponse, error});
+          });
         } else {
           resolve({item: itemResponse});
         }
