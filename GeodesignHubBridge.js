@@ -91,7 +91,6 @@ class GeodesignHubBridge extends EventTarget {
     const invalidKeywords = ['Tiled Imagery'];
     const _layerFilter = (item) => (layerTypes.includes(item.type)) && item.typeKeywords.every(keyword => !invalidKeywords.includes(keyword));
 
-
     // ONLINE CONTENT CONTAINER //
     const onlineContentItems = document.getElementById('online-content-items');
     // GROUP ID SELECT //
@@ -170,7 +169,7 @@ class GeodesignHubBridge extends EventTarget {
       switch (item.type) {
 
         case 'Feature Service':
-          item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/0` : item.url;
+          item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/${ item.subId || '0' }` : item.url;
           leafletLayer = new L.esri.featureLayer({url: item.url, token: this.#token, ...data});
           break;
 
