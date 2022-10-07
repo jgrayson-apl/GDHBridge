@@ -104,9 +104,14 @@ class GeodesignHubBridge extends EventTarget {
 
         const itemNodes = groupContent.items.filter(_layerFilter).map(onlineItem => {
 
+          const typeInfos = [onlineItem.type];
+          if (onlineItem.typeKeywords.includes('Tiled Imagery')) {
+            typeInfos.push('Tiled Imagery');
+          }
+
           const itemNode = document.createElement('div');
           itemNode.classList.add('online-item');
-          itemNode.innerHTML = `[ ${ onlineItem.type } ]<br>${ onlineItem.title }`;
+          itemNode.innerHTML = `[ ${ typeInfos.join(' | ') } ]<br>${ onlineItem.title }`;
           itemNode.title = onlineItem.typeKeywords.join(' | ');
           itemNode.addEventListener('click', (evt) => {
             evt.stopPropagation();
@@ -182,7 +187,7 @@ class GeodesignHubBridge extends EventTarget {
       switch (item.type) {
 
         case 'Feature Service':
-          item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/${ item.subId || '0' }` : item.url;
+          item.url = item.url.endsWith('/FeatureServer') ? `${ item.url }/0` : item.url;
           leafletLayer = L.esri.featureLayer({url: item.url, token: this.#token, ...data});
           break;
 
@@ -215,6 +220,7 @@ class GeodesignHubBridge extends EventTarget {
 
     this._resetMap();
 
+    // GET ITEM DATA //
     this.#portalUtils.getItemData({itemId: item.id}).then(({data}) => {
       // DISPLAY LAYER OVERRIDES //
       data && this.displayItemDetails(data, true);
