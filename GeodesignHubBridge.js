@@ -220,11 +220,7 @@ class GeodesignHubBridge extends EventTarget {
 
         case 'Image Service':
           if (item.typeKeywords.includes('Tiled Imagery')) {
-            if (item.typeKeywords.includes('Hosted Service')) {
-              reject(new Error(`Invalid type for this application: ${ JSON.stringify(item) }`));
-            } else {
-              leafletLayer = L.tileLayer(`${ item.url }/tile/{z}/{y}/{x}`, {token: this.#token, ...data});
-            }
+            leafletLayer = L.tileLayer(`${ item.url }/tile/{z}/{y}/{x}`, {token: this.#token, ...data});
           } else {
             leafletLayer = L.esri.imageMapLayer({url: item.url, token: this.#token, ...data});
           }
