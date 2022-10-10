@@ -119,7 +119,14 @@ class GeodesignHubBridge extends EventTarget {
 
     // LAYER ITEM FILTER //
     const layerTypes = ['Feature Service', 'Image Service', 'Vector Tile Service']; //'Map Service',
-    const _layerFilter = (item) => (layerTypes.includes(item.type));
+
+    const _layerFilter = (item) => {
+      if (layerTypes.includes(item.type)) {
+        if (item.typeKeywords.includes('Tiled Imagery')) {
+          return !item.typeKeywords.includes('Hosted Service');
+        } else { return true; }
+      } else { return false; }
+    };
 
     // ONLINE CONTENT CONTAINER //
     const onlineContentItems = document.getElementById('online-content-items');
@@ -188,8 +195,6 @@ class GeodesignHubBridge extends EventTarget {
 
   }
 
-
-
   /**
    *
    * @param {{}} item
@@ -215,7 +220,11 @@ class GeodesignHubBridge extends EventTarget {
 
         case 'Image Service':
           if (item.typeKeywords.includes('Tiled Imagery')) {
-            leafletLayer = L.tileLayer(`${ item.url }/tile/{z}/{y}/{x}`, {token: this.#token, ...data});
+            if (item.typeKeywords.includes('Hosted Service')) {
+              reject(new Error(`Invalid type for this application: ${ JSON.stringify(item) }`));
+            } else {
+              leafletLayer = L.tileLayer(`${ item.url }/tile/{z}/{y}/{x}`, {token: this.#token, ...data});
+            }
           } else {
             leafletLayer = L.esri.imageMapLayer({url: item.url, token: this.#token, ...data});
           }
@@ -269,9 +278,9 @@ class GeodesignHubBridge extends EventTarget {
         if (leafletLayer) {
           leafletLayer.addTo(this.#map);
           /*leafletLayer.query().bounds((error, latlngbounds) => {
-            if (error) { console.log('Error running "Query" operation: ' + error); }
-            this.#map.fitBounds(latlngbounds);
-          });*/
+           if (error) { console.log('Error running "Query" operation: ' + error); }
+           this.#map.fitBounds(latlngbounds);
+           });*/
         }
       }).catch(this._displayError);
     }).catch(this._displayError);
