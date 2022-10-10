@@ -74,12 +74,8 @@ class GeodesignHubBridge extends EventTarget {
   constructor() {
     super();
 
-    // PORTAL UTILS //
-    this.#portalUtils = new PortalUtils({});
-
     // SIGN IN //
     this._initializeSignIn();
-
   }
 
   /**
@@ -87,6 +83,9 @@ class GeodesignHubBridge extends EventTarget {
    * @private
    */
   _initializeSignIn() {
+
+    // PORTAL UTILS //
+    this.#portalUtils = new PortalUtils({});
 
     // SIGN IN BUTTON //
     const signInBtn = document.getElementById('sign-in-btn');
