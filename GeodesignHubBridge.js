@@ -118,7 +118,6 @@ class GeodesignHubBridge extends EventTarget {
 
     // LAYER ITEM FILTER //
     const layerTypes = ['Feature Service', 'Image Service', 'Vector Tile Service']; //'Map Service',
-
     const _layerFilter = (item) => {
       if (layerTypes.includes(item.type)) {
         if (item.typeKeywords.includes('Tiled Imagery')) {
