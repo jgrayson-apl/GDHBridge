@@ -188,26 +188,7 @@ class GeodesignHubBridge extends EventTarget {
 
   }
 
-  /**
-   *
-   * @param onlineItem
-   * @param append
-   */
-  displayItemDetails(onlineItem, append = false) {
 
-    const itemTitle = document.getElementById('item-title');
-    const itemDetails = document.getElementById('item-details');
-
-    onlineItem.title && (itemTitle.innerHTML = onlineItem.title);
-
-    if (append) {
-      itemDetails.innerHTML += "<br><br>";
-      itemDetails.innerHTML += JSON.stringify(onlineItem, null, 2);
-    } else {
-      itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
-    }
-
-  }
 
   /**
    *
@@ -250,6 +231,27 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * @param onlineItem
+   * @param append
+   */
+  displayItemDetails(onlineItem, append = false) {
+
+    const itemTitle = document.getElementById('item-title');
+    const itemDetails = document.getElementById('item-details');
+
+    onlineItem.title && (itemTitle.innerHTML = onlineItem.title);
+
+    if (append) {
+      itemDetails.innerHTML += "<br><br>";
+      itemDetails.innerHTML += JSON.stringify(onlineItem, null, 2);
+    } else {
+      itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
+    }
+
+  }
+
+  /**
+   *
    * @param {{}} item
    * @param {string} [token]
    */
@@ -271,7 +273,6 @@ class GeodesignHubBridge extends EventTarget {
             this.#map.fitBounds(latlngbounds);
           });*/
         }
-
       }).catch(this._displayError);
     }).catch(this._displayError);
 
