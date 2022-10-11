@@ -74,9 +74,13 @@
         width: calc(100% - 15px);
       }
       
+      #group-id-select {
+        padding: 5px;
+      }
+      
       .online-btn {
         width: 100%;
-        margin: 5px auto;
+        margin: 10px auto;
         padding: 5px;
         border-radius: 1rem;
         font-size: 11pt;
@@ -132,15 +136,15 @@
         <div id="user-container" class="container">
           <div>User</div>
           <button id="sign-in-btn" class="online-btn">sign in</button>
-          <input id="username-input" type="text" readonly>
+          <input id="username-input" type="text" style="text-align:center;" readonly>
         </div>
         
         <div id="online-content-details" class="container" hidden>
-          <label> <span>Test Online Groups</span> <select id="group-id-select">
-            <option value="5a0eb4eacfe94da6800089441a7ea2b7">Global GeoDesign Preview items</option>
+          <div>Test Online Groups</div>
+          <select id="group-id-select">
             <option value="9e4b9642677e4ee38a8aa72ab1691297">Socal Prototype Staging for Esri</option>
-          </select> </label>
-          
+            <option value="5a0eb4eacfe94da6800089441a7ea2b7">Global GeoDesign Preview items</option>
+          </select>
           <button id="online-content-btn" class="online-btn">discover group content</button>
           <div id="online-content-items"></div>
         </div>
@@ -149,7 +153,7 @@
           <div id="item-title"></div>
           <pre id="item-details"></pre>
         </div>
-        
+      
       </div>
       <div id="map"></div>
     </div>
