@@ -47,7 +47,7 @@ class GeodesignHubBridge extends EventTarget {
    * @type {string}
    * @private
    */
-  #clientId = "msDRPng92KMlf3RX";
+  #clientId = "PZdAgiu187TroTCX";
 
   /**
    *
@@ -76,6 +76,7 @@ class GeodesignHubBridge extends EventTarget {
 
     // SIGN IN //
     this._initializeSignIn();
+
   }
 
   /**
@@ -100,6 +101,9 @@ class GeodesignHubBridge extends EventTarget {
         this.#token = token;
         // SIGNED IN USER //
         usernameInput.value = user.username;
+
+        // INITIAL MAP //
+        this._resetMap();
 
         // GROUP CONTENT //
         this._initializeGroupContent();
@@ -181,6 +185,10 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * https://developers.arcgis.com/esri-leaflet/api-reference/layers/vector-basemap/
+   *
+   * https://developers.arcgis.com/documentation/mapping-apis-and-services/maps/services/basemap-layer-service/#custom-basemap-styles
+   *
    * @private
    */
   _resetMap() {
@@ -188,8 +196,8 @@ class GeodesignHubBridge extends EventTarget {
     this.#map?.remove();
     this.#map = L.map("map").setView([34.0, -117.0], 9);
 
-    L.esri.tiledMapLayer({url: "https://services.arcgisonline.com/arcgis/rest/services/Elevation/World_Hillshade/MapServer", token: this.#token}).addTo(this.#map);
-    L.esri.Vector.vectorBasemapLayer("7dc6cea0b1764a1f9af2e679f642f0f5", {token: this.#token}).addTo(this.#map);
+    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}).addTo(this.#map);
+    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token}).addTo(this.#map);
 
   }
 
