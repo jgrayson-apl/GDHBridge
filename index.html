@@ -16,6 +16,8 @@
     <script src="https://unpkg.com/esri-leaflet-renderers@3.0.0" crossorigin=""></script>
     <!-- Load Esri Leaflet Vector from CDN -->
     <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
+  
+    <script src="https://unpkg.com/lerc@3.0.0/LercDecode.js"></script>
     
     <style>
       html, body {
@@ -141,6 +143,11 @@
         </div>
         
         <div id="online-content-details" class="container" hidden>
+          
+          <button id="test-btn" class="online-btn" hidden>
+             Test - Hosted Tiled Imagery Layer
+          </button>
+          
           <div>Organization Groups</div>
           <select id="group-id-select">
             <option value="9e4b9642677e4ee38a8aa72ab1691297">Socal Prototype Staging for Esri</option>

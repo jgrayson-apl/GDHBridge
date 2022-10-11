@@ -34,9 +34,15 @@
  *
  * https://developers.arcgis.com/documentation/mapping-apis-and-services/content-management/services/portal-service/
  *
+ *
+ * IF HOSTED TILED IMAGERY LAYERS BECOME NECESSARY, THIS WOULD BE SOMETHING TO EXPLORE:
+ * https://github.com/jwasilgeo/leaflet-experiments/blob/master/lerc-landcover/script.js
+ *
+ *
  */
 
 import PortalUtils from './PortalUtils.js';
+import { lerc8bitColorLayer, Lerc8bitColorLayer } from './lerc/Lerc8bitColorLayer.js';
 
 class GeodesignHubBridge extends EventTarget {
 
@@ -112,6 +118,9 @@ class GeodesignHubBridge extends EventTarget {
 
         // GROUP CONTENT //
         this._initializeGroupContent();
+
+        // TESTS //
+        this.initializeTests();
 
       });
 
@@ -209,7 +218,9 @@ class GeodesignHubBridge extends EventTarget {
   _resetMap() {
 
     this.#map?.remove();
-    this.#map = L.map("map").setView([34.0, -117.0], 12);
+    this.#map = L.map("map",{
+      //crs: L.CRS.EPSG4326
+    }).setView([34.0, -117.0], 12);
     this.#layerControl = L.control.layers().addTo(this.#map);
 
     // TOPO BASEMAP //
@@ -220,9 +231,13 @@ class GeodesignHubBridge extends EventTarget {
 
     this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
 
+    console.info(this.#map.crs)
+
   }
 
   /**
+   *
+   *
    *
    * @param {{}} item
    * @param {{}} [data]
@@ -318,6 +333,40 @@ class GeodesignHubBridge extends EventTarget {
    */
   _displayError(error, info) {
     console.warn(error, info);
+  }
+
+  /**
+   *
+   */
+  initializeTests() {
+
+    const testBtn = document.getElementById('test-btn');
+    testBtn?.addEventListener('click', () => {
+
+      const testInfo = {
+        title: 'World Terrestrial Ecosystems 1-km Tiles for Global GeoDesign Project',
+        url: 'https://tiledimageservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/test2/ImageServer'
+      };
+
+      /**
+       *
+       * The layer is returned async because it needs to fetch
+       * the raster attribute table before creating the layer...
+       *
+       */
+      lerc8bitColorLayer({
+        url: testInfo.url,
+        token: this.#token,
+        tileSize: 256
+      }).then(hostedImageryTileLayer => {
+
+        hostedImageryTileLayer.addTo(this.#map);
+        this.#layerControl.addOverlay(hostedImageryTileLayer, testInfo.title);
+
+      });
+
+    });
+
   }
 
 }
