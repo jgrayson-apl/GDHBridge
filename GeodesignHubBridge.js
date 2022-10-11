@@ -71,6 +71,11 @@ class GeodesignHubBridge extends EventTarget {
   /**
    *
    */
+  #layerControl = null;
+
+  /**
+   *
+   */
   constructor() {
     super();
 
@@ -138,8 +143,10 @@ class GeodesignHubBridge extends EventTarget {
     // GET ONLINE CONTENT //
     const onlineContentBtn = document.getElementById('online-content-btn');
     onlineContentBtn?.addEventListener('click', () => {
-      const groupId = groupIdSelect.value;
 
+      this._resetMap();
+
+      const groupId = groupIdSelect.value;
       this.#portalUtils.getGroupContent({groupId}).then((groupContent) => {
 
         const itemNodes = groupContent.items.filter(_layerFilter).map(onlineItem => {
@@ -180,6 +187,8 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * https://leafletjs.com/reference.html#control-layers
+   *
    * https://developers.arcgis.com/esri-leaflet/api-reference/layers/vector-basemap/
    *
    * https://developers.arcgis.com/documentation/mapping-apis-and-services/maps/services/basemap-layer-service/#custom-basemap-styles
@@ -189,10 +198,16 @@ class GeodesignHubBridge extends EventTarget {
   _resetMap() {
 
     this.#map?.remove();
-    this.#map = L.map("map").setView([34.0, -117.0], 9);
+    this.#map = L.map("map").setView([34.0, -117.0], 12);
+    this.#layerControl = L.control.layers().addTo(this.#map);
 
-    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}).addTo(this.#map);
-    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token}).addTo(this.#map);
+    // TOPO BASEMAP //
+    const topoBasemap = L.layerGroup([
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}),
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token})
+    ]).addTo(this.#map);
+
+    this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
 
   }
 
@@ -270,14 +285,14 @@ class GeodesignHubBridge extends EventTarget {
       // DISPLAY LAYER OVERRIDES //
       data && this.displayItemDetails(data, true);
       // GET ESRI-LEAFLET LAYER //
-      this._esriLayerItemToLeafletLayer(item).then((leafletLayer) => {
+      this._esriLayerItemToLeafletLayer(item, {opacity: 0.8}).then((leafletLayer) => {
         // ADD ESRI-LEAFLET LAYER TO LEAFLET MAP //
         if (leafletLayer) {
+
           leafletLayer.addTo(this.#map);
-          /*leafletLayer.query().bounds((error, latlngbounds) => {
-           if (error) { console.log('Error running "Query" operation: ' + error); }
-           this.#map.fitBounds(latlngbounds);
-           });*/
+
+          this.#layerControl.addOverlay(leafletLayer, item.title);
+
         }
       }).catch(this._displayError);
     }).catch(this._displayError);
