@@ -135,10 +135,22 @@ class GeodesignHubBridge extends EventTarget {
       } else { return false; }
     };
 
+    const onlineContentDetail = document.getElementById('online-content-details');
+    onlineContentDetail?.toggleAttribute('hidden', false);
+
+    const onlineItemDetails = document.getElementById('online-item-details');
+    onlineItemDetails?.toggleAttribute('hidden', false);
+
     // ONLINE CONTENT CONTAINER //
     const onlineContentItems = document.getElementById('online-content-items');
     // GROUP ID SELECT //
     const groupIdSelect = document.getElementById('group-id-select');
+    groupIdSelect.addEventListener('change', () => {
+      this._resetMap();
+      onlineContentItems.replaceChildren();
+      onlineItemDetails?.toggleAttribute('hidden', true);
+      this.displayItemDetails();
+    });
 
     // GET ONLINE CONTENT //
     const onlineContentBtn = document.getElementById('online-content-btn');
@@ -170,23 +182,17 @@ class GeodesignHubBridge extends EventTarget {
           itemAction.innerHTML = 'details';
           itemAction.style.textAlign = 'right';
           itemNode.append(itemAction);
-          itemAction.addEventListener('click',(actionEvt)=>{
+          itemAction.addEventListener('click', (actionEvt) => {
             actionEvt.stopPropagation();
             window.open(`https://www.arcgis.com/home/item.html?id=${ onlineItem.id }`);
-          })
+          });
 
           return itemNode;
         });
         onlineContentItems.replaceChildren(...itemNodes);
-
+        onlineItemDetails?.toggleAttribute('hidden', false);
       });
     });
-
-    const onlineContentDetail = document.getElementById('online-content-details');
-    onlineContentDetail?.toggleAttribute('hidden', false);
-
-    const onlineItemDetails = document.getElementById('online-item-details');
-    onlineItemDetails?.toggleAttribute('hidden', false);
 
   }
 
@@ -265,13 +271,13 @@ class GeodesignHubBridge extends EventTarget {
     const itemTitle = document.getElementById('item-title');
     const itemDetails = document.getElementById('item-details');
 
-    onlineItem.title && (itemTitle.innerHTML = onlineItem.title);
+    itemTitle.innerHTML = onlineItem?.title || "";
 
     if (append) {
       itemDetails.innerHTML += "<br><br>";
       itemDetails.innerHTML += JSON.stringify(onlineItem, null, 2);
     } else {
-      itemDetails.innerHTML = JSON.stringify(onlineItem, null, 2);
+      itemDetails.innerHTML = onlineItem ? JSON.stringify(onlineItem, null, 2) : "";
     }
 
   }
