@@ -153,7 +153,7 @@ class GeodesignHubBridge extends EventTarget {
 
           const itemNode = document.createElement('div');
           itemNode.classList.add('online-item');
-          itemNode.innerHTML = `[ ${ onlineItem.type } ]<br>${ onlineItem.title }`;
+          itemNode.innerHTML = `[ ${ onlineItem.type } ]<br><br>${ onlineItem.title }`;
           itemNode.title = onlineItem.typeKeywords.join(' | ');
           itemNode.addEventListener('click', (evt) => {
             evt.stopPropagation();
@@ -165,10 +165,15 @@ class GeodesignHubBridge extends EventTarget {
             this.displayLayer({item: onlineItem, token: this.#token});
 
           });
-          itemNode.addEventListener('dblclick', (evt) => {
-            evt.stopPropagation();
+
+          const itemAction = document.createElement('div');
+          itemAction.innerHTML = 'details';
+          itemAction.style.textAlign = 'right';
+          itemNode.append(itemAction);
+          itemAction.addEventListener('click',(actionEvt)=>{
+            actionEvt.stopPropagation();
             window.open(`https://www.arcgis.com/home/item.html?id=${ onlineItem.id }`);
-          });
+          })
 
           return itemNode;
         });
