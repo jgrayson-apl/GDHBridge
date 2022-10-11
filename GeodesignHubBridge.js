@@ -187,13 +187,13 @@ class GeodesignHubBridge extends EventTarget {
    * @private
    */
   _resetMap() {
-
-    this.#map?.remove();
-    this.#map = L.map("map").setView([34.0, -117.0], 9);
-
-    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}).addTo(this.#map);
-    L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token}).addTo(this.#map);
-
+    if (!this.#map) {
+      this.#map = L.map("map").setView([34.0, -117.0], 9);
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}).addTo(this.#map);
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token}).addTo(this.#map);
+    } else {
+      this.#map.remove();
+    }
   }
 
   /**
