@@ -144,14 +144,9 @@ class GeodesignHubBridge extends EventTarget {
 
         const itemNodes = groupContent.items.filter(_layerFilter).map(onlineItem => {
 
-          const typeInfos = [onlineItem.type];
-          // if (onlineItem.typeKeywords.includes('Tiled Imagery')) {
-          //   typeInfos.push('Tiled Imagery');
-          // }
-
           const itemNode = document.createElement('div');
           itemNode.classList.add('online-item');
-          itemNode.innerHTML = `[ ${ typeInfos.join(' | ') } ]<br>${ onlineItem.title }`;
+          itemNode.innerHTML = `[ ${ onlineItem.type } ]<br>${ onlineItem.title }`;
           itemNode.title = onlineItem.typeKeywords.join(' | ');
           itemNode.addEventListener('click', (evt) => {
             evt.stopPropagation();
