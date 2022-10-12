@@ -64,6 +64,13 @@ class GeodesignHubBridge extends EventTarget {
 
   /**
    *
+   * @type {PortalUser}
+   * @private
+   */
+  #user;
+
+  /**
+   *
    * @type {string}
    * @private
    */
@@ -111,7 +118,8 @@ class GeodesignHubBridge extends EventTarget {
         // SESSION TOKEN //
         this.#token = token;
         // SIGNED IN USER //
-        usernameInput.value = user.username;
+        this.#user = user;
+        usernameInput.value = this.#user.username;
 
         // INITIAL MAP //
         this._resetMap();
@@ -218,7 +226,7 @@ class GeodesignHubBridge extends EventTarget {
   _resetMap() {
 
     this.#map?.remove();
-    this.#map = L.map("map",{
+    this.#map = L.map("map", {
       //crs: L.CRS.EPSG4326
     }).setView([34.0, -117.0], 12);
     this.#layerControl = L.control.layers().addTo(this.#map);
@@ -230,8 +238,6 @@ class GeodesignHubBridge extends EventTarget {
     ]).addTo(this.#map);
 
     this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
-
-    console.info(this.#map.crs)
 
   }
 
@@ -316,8 +322,36 @@ class GeodesignHubBridge extends EventTarget {
         if (leafletLayer) {
 
           leafletLayer.addTo(this.#map);
-
           this.#layerControl.addOverlay(leafletLayer, item.title);
+
+          if (item.type === 'Feature Service') {
+            leafletLayer.metadata((err, metadata) => {
+              if (!err) {
+                const ecoSystemsField = 'W_Ecosystm';
+
+                if (metadata.fields.find(f => f.name === ecoSystemsField)) {
+                  leafletLayer.query().fields(ecoSystemsField).distinct().run((error, featureCollection) => {
+                    const ecoSystemNames = featureCollection.features.map(feature => feature.properties[ecoSystemsField]);
+                    const nameItems = ecoSystemNames.map(ecoSystemName => {
+                      const nameItem = document.createElement('li');
+                      nameItem.classList.add('name-item');
+                      nameItem.innerHTML = ecoSystemName || '[ null ]';
+                      nameItem.addEventListener('click', () => {
+
+                        leafletLayer.setWhere(`(${ ecoSystemsField } = '${ ecoSystemName || '1=1' }')`);
+
+                      });
+                      return nameItem;
+                    });
+                    const filtersList = document.getElementById('filters-list');
+                    filtersList.replaceChildren(...nameItems);
+                  });
+                }
+
+              }
+            });
+
+          }
 
         }
       }).catch(this._displayError);

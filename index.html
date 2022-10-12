@@ -16,7 +16,7 @@
     <script src="https://unpkg.com/esri-leaflet-renderers@3.0.0" crossorigin=""></script>
     <!-- Load Esri Leaflet Vector from CDN -->
     <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
-  
+    
     <script src="https://unpkg.com/lerc@3.0.0/LercDecode.js"></script>
     
     <style>
@@ -62,6 +62,13 @@
       #online-content {
         flex: 0 0 450px;
         max-width: 450px;
+      }
+      
+      #filters-container {
+        flex: 0 0 450px;
+        max-width: 450px;
+        max-height: 100%;
+        overflow: auto;
       }
       
       #username-input {
@@ -128,6 +135,21 @@
         background-color: #fefefe;
         border: solid 1px #424242;
       }
+      
+      .name-item {
+        cursor: pointer !important;
+        padding: 5px 0;
+        border-bottom: solid 1px #cccccc;
+        color: #666666;
+      }
+      
+      .name-item:hover {
+        color: #242424;
+      }
+      
+      .name-item:active {
+        color: #cccccc;
+      }
     
     </style>
     <script type="module" src="./GeodesignHubBridge.js"></script>
@@ -145,7 +167,7 @@
         <div id="online-content-details" class="container" hidden>
           
           <button id="test-btn" class="online-btn" hidden>
-             Test - Hosted Tiled Imagery Layer
+            Test - Hosted Tiled Imagery Layer
           </button>
           
           <div>Organization Groups</div>
@@ -162,6 +184,9 @@
           <pre id="item-details"></pre>
         </div>
       
+      </div>
+      <div id="filters-container" class="container">
+        <ul id="filters-list"></ul>
       </div>
       <div id="map"></div>
     </div>
