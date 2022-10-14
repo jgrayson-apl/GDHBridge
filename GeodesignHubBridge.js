@@ -231,12 +231,18 @@ class GeodesignHubBridge extends EventTarget {
     }).setView([34.0, -117.0], 12);
     this.#layerControl = L.control.layers().addTo(this.#map);
 
+    // IMAGERY BASEMAP //
+    const imageryBasemap = L.layerGroup([
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Standard", {token: this.#token}),
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Base", {token: this.#token})
+    ]).addTo(this.#map);
+    this.#layerControl.addBaseLayer(imageryBasemap, 'Imagery');
+
     // TOPO BASEMAP //
     const topoBasemap = L.layerGroup([
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}),
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token})
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token, opacity: 0.5}),
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token, opacity: 0.5})
     ]).addTo(this.#map);
-
     this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
 
   }
@@ -345,6 +351,10 @@ class GeodesignHubBridge extends EventTarget {
                     });
                     const filtersList = document.getElementById('filters-list');
                     filtersList.replaceChildren(...nameItems);
+
+                    const filtersContainer = document.getElementById('filters-container');
+                    filtersContainer.toggleAttribute('hidden', false)
+
                   });
                 }
 
@@ -372,14 +382,23 @@ class GeodesignHubBridge extends EventTarget {
   /**
    *
    */
+  initializeEcosystemsFilter() {
+    // TODO //
+  }
+
+  /**
+   *
+   */
   initializeTests() {
 
     const testBtn = document.getElementById('test-btn');
     testBtn?.addEventListener('click', () => {
 
       const testInfo = {
-        title: 'World Terrestrial Ecosystems 1-km Tiles for Global GeoDesign Project',
-        url: 'https://tiledimageservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/test2/ImageServer'
+        itemUrl: 'https://igcollab.maps.arcgis.com/home/item.html?id=506ec2e0e3a6434897f92a38080cc473',
+        itemId: '506ec2e0e3a6434897f92a38080cc473',
+        title: 'Global GeoDesign Project WTEs Dynamic Web Mercator',
+        url: 'https://iservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/GGP_Predom_WTE_V3_wm/ImageServer'
       };
 
       /**
@@ -395,7 +414,7 @@ class GeodesignHubBridge extends EventTarget {
       }).then(hostedImageryTileLayer => {
 
         hostedImageryTileLayer.addTo(this.#map);
-        this.#layerControl.addOverlay(hostedImageryTileLayer, testInfo.title);
+        this.#layerControl.addBaseLayer(hostedImageryTileLayer, testInfo.title);
 
       });
 
