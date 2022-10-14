@@ -1,5 +1,8 @@
+//
 // INSPIRED HEAVILY BY https://github.com/jgravois/lerc-leaflet
+//
 // https://github.com/jwasilgeo/leaflet-experiments/blob/master/lerc-landcover/script.js
+//
 
 // create a custom layer type extending from the LeafletJS GridLayer
 export const Lerc8bitColorLayer = L.GridLayer.extend({
@@ -13,10 +16,13 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     let tileUrl = `${ this.options.url }/tile/${ coords.z }/${ coords.y }/${ coords.x }`;
     this.options.token && (tileUrl += `?token=${ this.options.token }`);
 
-    fetch(tileUrl, {method: "GET"})
-    .then((response) => response.arrayBuffer())
-    .then((arrayBuffer) => {
+    fetch(tileUrl, {method: "GET"}).then((response) => {
+      if (response.ok) {
+        return response.arrayBuffer();
+      } else { throw new Error(`no tile: ${ response.status }`); }
+    }).then((arrayBuffer) => {
       try {
+
         // decode the response's arrayBuffer (Lerc global comes from an imported script)
         tile.decodedPixels = Lerc.decode(arrayBuffer);
 
@@ -24,7 +30,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
           // display newly decoded pixel data as canvas context image data
           this.draw.call(this, tile);
         } catch (error) {
-          console.error(error);
+          //console.error(error);
           // displaying error text in the canvas tile is for debugging/demo purposes
           // we could instead call `this.draw.call(this, tile);` to bring less visual attention to any errors
           this.drawError(tile, "error drawing data");
@@ -41,7 +47,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
       //console.error(error);
       // displaying error text in the canvas tile is for debugging/demo purposes
       // we could instead call `this.draw.call(this, tile);` to bring less visual attention to any errors
-      this.drawError(tile, "no arraybuffer");
+      this.drawError(tile, error?.message || "no arraybuffer");
       done(tileError, tile);
     });
 

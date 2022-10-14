@@ -227,7 +227,7 @@ class GeodesignHubBridge extends EventTarget {
 
     this.#map?.remove();
     this.#map = L.map("map", {
-      //crs: L.CRS.EPSG4326
+      //crs: L.CRS.EPSG3857
     }).setView([34.0, -117.0], 12);
     this.#layerControl = L.control.layers().addTo(this.#map);
 
@@ -240,8 +240,8 @@ class GeodesignHubBridge extends EventTarget {
 
     // TOPO BASEMAP //
     const topoBasemap = L.layerGroup([
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token, opacity: 0.5}),
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token, opacity: 0.5})
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token }),
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token})
     ]).addTo(this.#map);
     this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
 
@@ -353,16 +353,13 @@ class GeodesignHubBridge extends EventTarget {
                     filtersList.replaceChildren(...nameItems);
 
                     const filtersContainer = document.getElementById('filters-container');
-                    filtersContainer.toggleAttribute('hidden', false)
+                    filtersContainer.toggleAttribute('hidden', false);
 
                   });
                 }
-
               }
             });
-
           }
-
         }
       }).catch(this._displayError);
     }).catch(this._displayError);
@@ -391,33 +388,38 @@ class GeodesignHubBridge extends EventTarget {
    */
   initializeTests() {
 
+    const testInfo = {
+      itemUrl: 'https://igcollab.maps.arcgis.com/home/item.html?id=619bb6610519417d857b547ec29ea734',
+      itemId: '619bb6610519417d857b547ec29ea734',
+      title: 'Global GeoDesign Project WTEs Tiled Web Mercator',
+      url: 'https://tiledimageservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/Global_GeoDesign_Project_WTEs_Tiled_Web_Mercator/ImageServer'
+    };
+
     const testBtn = document.getElementById('test-btn');
     testBtn?.addEventListener('click', () => {
 
-      const testInfo = {
-        itemUrl: 'https://igcollab.maps.arcgis.com/home/item.html?id=506ec2e0e3a6434897f92a38080cc473',
-        itemId: '506ec2e0e3a6434897f92a38080cc473',
-        title: 'Global GeoDesign Project WTEs Dynamic Web Mercator',
-        url: 'https://iservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/GGP_Predom_WTE_V3_wm/ImageServer'
-      };
+      if (testInfo.url) {
 
-      /**
-       *
-       * The layer is returned async because it needs to fetch
-       * the raster attribute table before creating the layer...
-       *
-       */
-      lerc8bitColorLayer({
-        url: testInfo.url,
-        token: this.#token,
-        tileSize: 256
-      }).then(hostedImageryTileLayer => {
+        /**
+         *
+         * The layer is returned async because it needs to fetch
+         * the raster attribute table before creating the layer...
+         *
+         */
+        lerc8bitColorLayer({
+          url: testInfo.url,
+          token: this.#token,
+          tileSize: 256
+        }).then(hostedImageryTileLayer => {
 
-        hostedImageryTileLayer.addTo(this.#map);
-        this.#layerControl.addBaseLayer(hostedImageryTileLayer, testInfo.title);
+          hostedImageryTileLayer.addTo(this.#map);
+          this.#layerControl.addBaseLayer(hostedImageryTileLayer, testInfo.title);
 
-      });
+        });
 
+      } else {
+        console.warn("No test url configured...");
+      }
     });
 
   }
