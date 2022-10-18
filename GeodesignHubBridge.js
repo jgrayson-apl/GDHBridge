@@ -225,25 +225,44 @@ class GeodesignHubBridge extends EventTarget {
    */
   _resetMap() {
 
-    this.#map?.remove();
-    this.#map = L.map("map", {
-      //crs: L.CRS.EPSG3857
-    }).setView([34.0, -117.0], 12);
-    this.#layerControl = L.control.layers().addTo(this.#map);
-
     // IMAGERY BASEMAP //
     const imageryBasemap = L.layerGroup([
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Standard", {token: this.#token}),
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Base", {token: this.#token})
-    ]).addTo(this.#map);
-    this.#layerControl.addBaseLayer(imageryBasemap, 'Imagery');
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Standard", {token: this.#token})
+    ]);
 
     // TOPO BASEMAP //
     const topoBasemap = L.layerGroup([
-      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token }),
+      L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}),
       L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token})
-    ]).addTo(this.#map);
-    this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
+    ]);
+
+    this.#map?.remove();
+    this.#map = L.map("map", {
+      // crs: L.CRS.EPSG3857,
+      layers: [topoBasemap, imageryBasemap]
+    }).setView([34.0, -117.0], 12);
+
+    // IMAGERY BASEMAP //
+    /*const imageryBasemap = L.layerGroup([
+     L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Standard", {token: this.#token}),
+     L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery:Base", {token: this.#token})
+     ]).addTo(this.#map);*/
+    //this.#layerControl.addBaseLayer(imageryBasemap, 'Imagery');
+
+    // TOPO BASEMAP //
+    /*const topoBasemap = L.layerGroup([
+     L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic", {token: this.#token}),
+     L.esri.Vector.vectorBasemapLayer("ArcGIS:Topographic:Base", {token: this.#token})
+     ]).addTo(this.#map);*/
+    //this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
+
+    this.#layerControl = L.control.layers({},{
+      "Imagery": imageryBasemap,
+      "Topographic": topoBasemap
+    }, {
+      sortLayers: false,
+      collapsed: false
+    }).addTo(this.#map);
 
   }
 
@@ -389,9 +408,9 @@ class GeodesignHubBridge extends EventTarget {
   initializeTests() {
 
     const testInfo = {
-      itemUrl: 'https://igcollab.maps.arcgis.com/home/item.html?id=619bb6610519417d857b547ec29ea734',
-      itemId: '619bb6610519417d857b547ec29ea734',
       title: 'Global GeoDesign Project WTEs Tiled Web Mercator',
+      itemId: '619bb6610519417d857b547ec29ea734',
+      itemUrl: 'https://igcollab.maps.arcgis.com/home/item.html?id=619bb6610519417d857b547ec29ea734',
       url: 'https://tiledimageservices9.arcgis.com/vBCQ4PWZkZBueexC/arcgis/rest/services/Global_GeoDesign_Project_WTEs_Tiled_Web_Mercator/ImageServer'
     };
 
@@ -409,11 +428,12 @@ class GeodesignHubBridge extends EventTarget {
         lerc8bitColorLayer({
           url: testInfo.url,
           token: this.#token,
+          //opacity: 0.8,
           tileSize: 256
         }).then(hostedImageryTileLayer => {
 
           hostedImageryTileLayer.addTo(this.#map);
-          this.#layerControl.addBaseLayer(hostedImageryTileLayer, testInfo.title);
+          this.#layerControl.addOverlay(hostedImageryTileLayer, testInfo.title);
 
         });
 
