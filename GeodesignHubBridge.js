@@ -238,9 +238,9 @@ class GeodesignHubBridge extends EventTarget {
 
     this.#map?.remove();
     this.#map = L.map("map", {
-      // crs: L.CRS.EPSG3857,
+      crs: L.CRS.EPSG3857,
       layers: [topoBasemap, imageryBasemap]
-    }).setView([34.0, -117.0], 12);
+    }).setView([34.0, -117.0], 10);
 
     // IMAGERY BASEMAP //
     /*const imageryBasemap = L.layerGroup([
@@ -256,7 +256,7 @@ class GeodesignHubBridge extends EventTarget {
      ]).addTo(this.#map);*/
     //this.#layerControl.addBaseLayer(topoBasemap, 'Topographic');
 
-    this.#layerControl = L.control.layers({},{
+    this.#layerControl = L.control.layers({}, {
       "Imagery": imageryBasemap,
       "Topographic": topoBasemap
     }, {
@@ -403,6 +403,10 @@ class GeodesignHubBridge extends EventTarget {
   }
 
   /**
+   * https://github.com/Esri/esri-leaflet/issues/726#issuecomment-1275187118
+   *
+   * https://codepen.io/john-grayson/pen/gOzJRgg
+   *
    *
    */
   initializeTests() {
@@ -416,6 +420,7 @@ class GeodesignHubBridge extends EventTarget {
 
     const testBtn = document.getElementById('test-btn');
     testBtn?.addEventListener('click', () => {
+      testBtn.toggleAttribute('disabled', true);
 
       if (testInfo.url) {
 
@@ -426,10 +431,12 @@ class GeodesignHubBridge extends EventTarget {
          *
          */
         lerc8bitColorLayer({
+          crs: L.CRS.EPSG3857,
           url: testInfo.url,
           token: this.#token,
-          //opacity: 0.8,
-          tileSize: 256
+          noWrap: true,
+          tileSize: 256,
+          maxZoom: 6
         }).then(hostedImageryTileLayer => {
 
           hostedImageryTileLayer.addTo(this.#map);

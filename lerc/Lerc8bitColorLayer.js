@@ -13,6 +13,9 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     tile.width = this.options.tileSize;
     tile.height = this.options.tileSize;
 
+    // 6/63/97 //
+    //console.info('6/63/97 ::: ', `${ coords.z }/${ coords.y }/${ coords.x }`);
+
     let tileUrl = `${ this.options.url }/tile/${ coords.z }/${ coords.y }/${ coords.x }`;
     this.options.token && (tileUrl += `?token=${ this.options.token }`);
 
@@ -60,7 +63,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     const pixels = tile.decodedPixels.pixels[0]; // get pixels from the first band (only 1 band when 8bit RGB)
     const mask = tile.decodedPixels.maskData;
     const rasterClassAttributes = this.options.rasterClassAttributes;
-    const opacity = this.options.opacity || 1.0;
+    const opacity = (this.options.opacity || 1.0);
 
     // write new canvas context image data by working with the decoded pixel array and mask array
     const ctx = tile.getContext("2d"); // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
@@ -88,8 +91,9 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
         data[i * 4 + 3] = (255 * opacity);
       }
     }
-
     ctx.putImageData(imageData, 0, 0);
+
+    return imageData;
   },
 
   drawError: function (tile, errorMsg = "error") {
