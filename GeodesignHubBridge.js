@@ -30,8 +30,7 @@
  * https://developers.arcgis.com/esri-leaflet/
  *
  *
- * https://developers.arcgis.com/arcgis-rest-js/authentication/tutorials/authenticate-with-an-arcgis-identity-rest-js-browser/
- *
+ * https://developers.arcgis.com/arcgis-rest-js/authentication/tutorials/authenticate-with-an-arcgis-identity-rest-js-browser/ *
  * https://developers.arcgis.com/documentation/mapping-apis-and-services/content-management/services/portal-service/
  *
  *
@@ -443,6 +442,7 @@ class GeodesignHubBridge extends EventTarget {
           this.#layerControl.addOverlay(hostedImageryTileLayer, testInfo.title);
 
         });
+
 
       } else {
         console.warn("No test url configured...");

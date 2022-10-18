@@ -13,8 +13,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     tile.width = this.options.tileSize;
     tile.height = this.options.tileSize;
 
-    // 6/63/97 //
-    //console.info('6/63/97 ::: ', `${ coords.z }/${ coords.y }/${ coords.x }`);
+    //console.info(`6/63/97 ::: ${ coords.z }/${ coords.y }/${ coords.x }`);
 
     let tileUrl = `${ this.options.url }/tile/${ coords.z }/${ coords.y }/${ coords.x }`;
     this.options.token && (tileUrl += `?token=${ this.options.token }`);
@@ -28,6 +27,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
 
         // decode the response's arrayBuffer (Lerc global comes from an imported script)
         tile.decodedPixels = Lerc.decode(arrayBuffer);
+        tile.decodedPixels.coords = coords;
 
         try {
           // display newly decoded pixel data as canvas context image data
@@ -65,6 +65,9 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     const rasterClassAttributes = this.options.rasterClassAttributes;
     const opacity = (this.options.opacity || 1.0);
 
+    const {x, y, z} = tile.decodedPixels.coords;
+    console.info(`${ z }/${ y }/${ x }`, tile.style.transform);
+
     // write new canvas context image data by working with the decoded pixel array and mask array
     const ctx = tile.getContext("2d"); // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
     const imageData = ctx.createImageData(width, height);
@@ -91,9 +94,8 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
         data[i * 4 + 3] = (255 * opacity);
       }
     }
-    ctx.putImageData(imageData, 0, 0);
 
-    return imageData;
+    ctx.putImageData(imageData, 0, 0);
   },
 
   drawError: function (tile, errorMsg = "error") {
@@ -126,7 +128,6 @@ export function lerc8bitColorLayer(options) {
       .then((rasterAttributeTable) => {
 
         const rasterClassAttributes = rasterAttributeTable.features.filter(feature => feature?.attributes != null).map(feature => feature.attributes);
-
         const lercLayer = new Lerc8bitColorLayer({...options, rasterClassAttributes: rasterClassAttributes});
 
         resolve(lercLayer);
