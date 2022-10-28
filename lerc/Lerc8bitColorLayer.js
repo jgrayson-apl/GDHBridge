@@ -3,6 +3,10 @@
 //
 // https://github.com/jwasilgeo/leaflet-experiments/blob/master/lerc-landcover/script.js
 //
+// https://github.com/Esri/esri-leaflet/issues/726
+//
+// https://github.com/Leaflet/Leaflet/blob/579ef5869b99ae7ff858a583bb08379cf035cefd/src/layer/tile/GridLayer.js#L592
+//
 
 // create a custom layer type extending from the LeafletJS GridLayer
 export const Lerc8bitColorLayer = L.GridLayer.extend({
@@ -27,7 +31,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
 
         // decode the response's arrayBuffer (Lerc global comes from an imported script)
         tile.decodedPixels = Lerc.decode(arrayBuffer);
-        tile.decodedPixels.coords = coords;
+        //tile.decodedPixels.coords = coords;
 
         try {
           // display newly decoded pixel data as canvas context image data
@@ -62,11 +66,15 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
     const height = tile.decodedPixels.height;
     const pixels = tile.decodedPixels.pixels[0]; // get pixels from the first band (only 1 band when 8bit RGB)
     const mask = tile.decodedPixels.maskData;
-    const rasterClassAttributes = this.options.rasterClassAttributes;
+    const rasterClassAttributesByValue = this.options.rasterClassAttributesByValue;
     const opacity = (this.options.opacity || 1.0);
 
-    const {x, y, z} = tile.decodedPixels.coords;
-    console.info(`${ z }/${ y }/${ x }`, tile.style.transform);
+    // const {x, y, z} = tile.decodedPixels.coords;
+    // console.info(`${ z }/${ y }/${ x }`, tile.style.transform);
+    // console.info(tile.style.transform, x, y, z, `${z}/${y}/${x}`);
+    // const [tx,ty,tz] = tile.style.transform.replace(/translate3d\(/gi,'').replace(/\)/,'').split(', ').map(s=>Number(s.replace('px','')));
+    // tile.style.transform = `translate3d(${tx}px, ${ty}px, ${tz}px)`;
+    // console.info(tx,ty,tz,tile.style.transform);
 
     // write new canvas context image data by working with the decoded pixel array and mask array
     const ctx = tile.getContext("2d"); // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
@@ -77,7 +85,7 @@ export const Lerc8bitColorLayer = L.GridLayer.extend({
       // look up RGB colormap attributes in the raster attribute table for the decoded pixel value
       const pixelValue = pixels[i];
       // class attributes //
-      const attributes = rasterClassAttributes.find(attributes => attributes.Value === pixelValue);
+      const attributes = rasterClassAttributesByValue.get(pixelValue);
       const hasClassName = (attributes?.ClassName !== "No Data");
       const missingData = (mask && !mask[i]);
 
@@ -120,17 +128,31 @@ export function lerc8bitColorLayer(options) {
   return new Promise((resolve, reject) => {
     if (options.url) {
 
-      let rasterAttributeTableURL = `${ options.url }/rasterattributetable?f=json`;
+      let rasterAttributeTableURL = `${ options.url }/rasterAttributeTable?f=json`;
       options.token && (rasterAttributeTableURL += `&token=${ options.token }`);
 
       fetch(rasterAttributeTableURL, {method: "GET"})
       .then((response) => response.json())
       .then((rasterAttributeTable) => {
 
-        const rasterClassAttributes = rasterAttributeTable.features.filter(feature => feature?.attributes != null).map(feature => feature.attributes);
-        const lercLayer = new Lerc8bitColorLayer({...options, rasterClassAttributes: rasterClassAttributes});
+        const rasterClassAttributesByValue = rasterAttributeTable.features.reduce((list, feature) => {
+          (feature?.attributes != null) && list.set(feature.attributes.Value, feature.attributes);
+          return list;
+        }, new Map());
 
-        resolve(lercLayer);
+        let metadataURL = `${ options.url }?f=json`;
+        options.token && (metadataURL += `&token=${ options.token }`);
+
+        fetch(metadataURL, {method: "GET"})
+        .then((response) => response.json())
+        .then((metadata) => {
+          const tileInfo = metadata.tileInfo;
+
+          const lercLayer = new Lerc8bitColorLayer({...options, tileInfo, rasterClassAttributesByValue});
+
+          resolve(lercLayer);
+
+        }).catch(reject);
       }).catch(reject);
     } else {
       reject(new Error("Options missing 'url' parameter..."));
